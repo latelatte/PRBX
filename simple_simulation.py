@@ -27,7 +27,7 @@ class Player:
         
         
 class PandemicSimulation:
-    def __init__(self):
+    def __init__(self, strategy1, strategy2):
         self.cities = [
             City("Atlanta", infection_level=random.randint(0, 3)),
             City("Chicago", infection_level=random.randint(0, 3)),
@@ -39,8 +39,8 @@ class PandemicSimulation:
             city.cities = self.cities
             
         self.players = [
-            Player("Alice", aggressive_strategy),
-            Player("Bob", aggressive_strategy),
+            Player("Alice", strategy1),
+            Player("Bob", strategy2),
         ]
         self.players[0].move(self.cities[0])
         self.players[1].move(self.cities[1])
@@ -91,9 +91,26 @@ def aggressive_strategy(player):
     player.move(target_city)
     player.city.treat_infection()
     
+def cautious_strategy(player):
+    # move to the city with the lowest infection level and treat it
+    target_city = min(player.city.cities, key=lambda city: city.infection_level)
+    player.move(target_city)
+    player.city.treat_infection()
     
-
-simulation = PandemicSimulation()
+def cooperative_strategy(player):
+    # asign different roles to players
+    if player.name == "Alice":
+        # move to the city with the highest infection level and treat it (aggressive)
+        target_city = max(player.city.cities, key=lambda city: city.infection_level)
+        player.move(target_city)
+        player.city.treat_infection()
+    else:
+        # move to the city with the lowest infection level and treat it (cautious)
+        target_city = min(player.city.cities, key=lambda city: city.infection_level)
+        player.move(target_city)
+        player.city.treat_infection()
+        
+simulation = PandemicSimulation(aggressive_strategy, aggressive_strategy)
 simulation.show_status()
 
 while not simulation.is_game_over():
