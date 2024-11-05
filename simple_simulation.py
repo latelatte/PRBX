@@ -4,6 +4,10 @@ class City:
     def __init__(self, name, infection_level=0):
         self.name = name
         self.infection_level = infection_level
+        self.neighbours = []
+        
+    def add_neighbour(self, neighbours):
+        self.neighbours.append(neighbours)
         
     def increase_infection(self):
         self.infection_level += 1
@@ -28,22 +32,33 @@ class Player:
         
 class PandemicSimulation:
     def __init__(self, strategy1, strategy2):
-        self.cities = [
-            City("Atlanta", infection_level=random.randint(0, 3)),
-            City("Chicago", infection_level=random.randint(0, 3)),
-            City("New York", infection_level=random.randint(0, 3)),
-            City("San Francisco", infection_level=random.randint(0, 3)),
-            City("Washington", infection_level=random.randint(0, 3)), 
-        ]
+        # Initialise cities
+        city_a = City("Atlanta", infection_level=random.randint(0, 2))
+        city_b = City("Beijing", infection_level=random.randint(0, 2))
+        city_c = City("Cairo", infection_level=random.randint(0, 2))
+        city_d = City("Delhi", infection_level=random.randint(0, 2))
+        city_e = City("Essen", infection_level=random.randint(0, 2))
+        
+        city_a.add_neighbour(city_b)
+        city_b.add_neighbour(city_a)
+        city_b.add_neighbour(city_c)
+        city_c.add_neighbour(city_b)
+        city_c.add_neighbour(city_d)
+        city_d.add_neighbour(city_c)
+        city_d.add_neighbour(city_e)
+        city_e.add_neighbour(city_d)
+        
+        self.cities = [city_a, city_b, city_c, city_d, city_e]
         for city in self.cities:
             city.cities = self.cities
+        
             
         self.players = [
             Player("Alice", strategy1),
             Player("Bob", strategy2),
         ]
-        self.players[0].move(self.cities[0])
-        self.players[1].move(self.cities[1])
+        self.players[0].move(city_a)
+        self.players[1].move(city_b)
         
         self.outbreaks = 0
         
@@ -59,8 +74,8 @@ class PandemicSimulation:
                     self.outbreaks += 1
                     print(f"Outbreak in {city.name}!")
                     for other_city in city.cities:
-                        # 50% chance of spreading to other cities.
-                        if other_city != city and random.random() < 0.5:
+                        # Spread infection to neighbouring cities
+                        if other_city != city:
                             other_city.increase_infection()
                     city.infection_level = 3
                     
@@ -110,7 +125,7 @@ def cooperative_strategy(player):
         player.move(target_city)
         player.city.treat_infection()
         
-simulation = PandemicSimulation(aggressive_strategy, aggressive_strategy)
+simulation = PandemicSimulation(cooperative_strategy, aggressive_strategy)
 simulation.show_status()
 
 while not simulation.is_game_over():
